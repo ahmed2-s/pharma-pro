@@ -5771,80 +5771,120 @@ async function downloadAllDataFromSQL(force = false) {
   }
 }
 // ==================== تفعيل مقترحات البحث التلقائي لشاشة استلام الشحنة ====================
+// ==================== تفعيل مقترحات والتعرف التلقائي على الباركود لشاشة استلام الشحنة ====================
 (function initSupplySearch() {
-  const input = document.getElementById("supplyMedSearchInput");
+  const searchInput = document.getElementById("supplyMedSearchInput");
+  const barcodeInput = document.getElementById("supplyBarcodeInput");
   const dropdown = document.getElementById("supplySearchDropdown");
-  if (!input || !dropdown) return;
 
-  let debounceTimer = null;
+  // 1. التعرف الفوري على الصنف بمجرد مسح الباركود في خانة الباركود الدولي
+  if (barcodeInput) {
+    let barcodeTimer = null;
+    barcodeInput.addEventListener("input", () => {
+      clearTimeout(barcodeTimer);
+      barcodeTimer = setTimeout(async () => {
+        const rawCode = barcodeInput.value.trim();
+        const cleanCode = typeof sanitizeBarcode === "function" ? sanitizeBarcode(rawCode) : rawCode.replace(/[^0-9]/g, '');
 
-  // الاستماع للكتابة والبحث في أدوية المخزن
-  input.addEventListener("input", () => {
-    clearTimeout(debounceTimer);
-    const query = input.value.trim().toLowerCase();
+        if (!cleanCode || cleanCode.length < 5) return;
 
-    if (!query) {
-      dropdown.classList.add("hidden");
-      dropdown.innerHTML = "";
-      return;
-    }
+        // البحث عن الدواء المسجل بهذا الباركود
+        const med = await db.medicines.where("barcode").equals(cleanCode).first()
+                 || await db.medicines.filter(m => m.barcode === cleanCode || m.code === cleanCode).first();
 
-    // تأخير بسيط 200 مللي ثانية للسرعة
-    debounceTimer = setTimeout(async () => {
-      const matches = await db.medicines
-        .filter(m => 
-          (m.name && m.name.toLowerCase().includes(query)) ||
-          (m.scientificName && m.scientificName.toLowerCase().includes(query)) ||
-          (m.barcode && m.barcode.includes(query))
-        )
-        .limit(10) // إظهار أول 10 أدوية متطابقة
-        .toArray();
+        if (med) {
+          // التحويل لوضع الصنف المسجل وتعبئة كافة البيانات تلقائياً
+          if (typeof toggleSupplyMode === "function") toggleSupplyMode('existing');
+          onSupplyMedSelected(med);
+          showToast("تم التعرف على الصنف ✓", `${med.name} (المكان: ${med.shelfLocation || 'غير محدد'})`, "success");
+        }
+      }, 120);
+    });
+  }
 
-      dropdown.innerHTML = "";
+  // 2. البحث والتحديد السريع من خانة البحث عن الصنف المسجل
+  if (searchInput && dropdown) {
+    let debounceTimer = null;
 
-      if (matches.length > 0) {
-        matches.forEach(med => {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "w-full text-right p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between gap-2 text-xs transition-colors border-b";
-          btn.innerHTML = `
-            <div>
-              <div class="font-bold text-slate-900 dark:text-white">${med.name}</div>
-              <div class="text-[10px] text-teal-600 font-semibold">
-                <i class="fa-solid fa-cubes-stacked text-[9px]"></i> المكان: ${med.shelfLocation || 'غير محدد'}
-              </div>
-            </div>
-            <div class="text-left font-mono">
-              <span class="block font-bold text-teal-700 dark:text-teal-400">${Number(med.boxPrice || 0).toFixed(2)} ج.م</span>
-              <span class="text-[9px] text-slate-400">${med.category || 'أدوية'}</span>
-            </div>
-          `;
+    searchInput.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      const query = searchInput.value.trim().toLowerCase();
 
-          // عند الضغط على الدواء: تنزل بياناته في الحقول تلقائياً
-          btn.onclick = () => {
-            onSupplyMedSelected(med);
+      if (!query) {
+        dropdown.classList.add("hidden");
+        dropdown.innerHTML = "";
+        return;
+      }
+
+      debounceTimer = setTimeout(async () => {
+        const cleanQuery = typeof sanitizeBarcode === "function" ? sanitizeBarcode(query) : query.replace(/[^0-9]/g, '');
+
+        // إذا كان المدخل باركود صريحاً وتم مسحه في خانة البحث
+        if (cleanQuery && cleanQuery.length >= 6) {
+          const directMed = await db.medicines.where("barcode").equals(cleanQuery).first()
+                         || await db.medicines.filter(m => m.barcode === cleanQuery).first();
+          if (directMed) {
+            onSupplyMedSelected(directMed);
             dropdown.classList.add("hidden");
             dropdown.innerHTML = "";
-          };
+            showToast("تم التعرف على الصنف ✓", directMed.name, "success");
+            return;
+          }
+        }
 
-          dropdown.appendChild(btn);
-        });
+        // البحث بالاسم أو المادة الفعالة
+        const matches = await db.medicines
+          .filter(m => 
+            (m.name && m.name.toLowerCase().includes(query)) ||
+            (m.scientificName && m.scientificName.toLowerCase().includes(query)) ||
+            (m.barcode && m.barcode.includes(query))
+          )
+          .limit(10)
+          .toArray();
 
-        dropdown.classList.remove("hidden");
-      } else {
+        dropdown.innerHTML = "";
+
+        if (matches.length > 0) {
+          matches.forEach(med => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "w-full text-right p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between gap-2 text-xs transition-colors border-b";
+            btn.innerHTML = `
+              <div>
+                <div class="font-bold text-slate-900 dark:text-white">${med.name}</div>
+                <div class="text-[10px] text-teal-600 font-semibold">
+                  <i class="fa-solid fa-cubes-stacked text-[9px]"></i> المكان: ${med.shelfLocation || 'غير محدد'}
+                </div>
+              </div>
+              <div class="text-left font-mono">
+                <span class="block font-bold text-teal-700 dark:text-teal-400">${Number(med.boxPrice || 0).toFixed(2)} ج.م</span>
+                <span class="text-[9px] text-slate-400">${med.category || 'أدوية'}</span>
+              </div>
+            `;
+
+            btn.onclick = () => {
+              onSupplyMedSelected(med);
+              dropdown.classList.add("hidden");
+              dropdown.innerHTML = "";
+            };
+
+            dropdown.appendChild(btn);
+          });
+
+          dropdown.classList.remove("hidden");
+        } else {
+          dropdown.classList.add("hidden");
+        }
+      }, 150);
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
         dropdown.classList.add("hidden");
       }
-    }, 200);
-  });
-
-  // إغلاق القائمة لو ضغطت بالماوس في أي مكان خارجي
-  document.addEventListener("click", (e) => {
-    if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-      dropdown.classList.add("hidden");
-    }
-  });
-})();
-/**
+    });
+  }
+})();/**
  * ==================== 1. البوابة السرية المخفية للتحليلات الحية ====================
  */
 let logoClickCounter = 0;
