@@ -204,7 +204,7 @@
           <div class="flex items-center gap-2">
             <div class="w-6 h-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
               <img 
-                src="https://drive.google.com/file/d/1983X51MEoSEn30ImZxtIPEdv9TQkBS2o/view?usp=sharing 
+                src="https://drive.google.com/file/d/1983X51MEoSEn30ImZxtIPEdv9TQkBS2o/view?usp=sharing" 
                 alt="Logo" 
                 class="w-full h-full object-cover" 
                 onerror="this.style.display='none'"
@@ -1065,9 +1065,12 @@
       </div>
 
       <div class="flex gap-2">
-        <button onclick="saveNewMedicineToInventory()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
-          حفظ وإدراج بالمخزن
-        </button>
+        <button type="button" onclick="saveNewMedicineToInventory(false)" class="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-2 rounded-xl text-xs font-bold">
+  حفظ وإغلاق
+</button>
+<button type="button" onclick="saveNewMedicineToInventory(true)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1">
+  <i class="fa-solid fa-plus"></i> حفظ وإدخال الصنف التالي (سريع)
+</button>
         <button onclick="toggleModal('addNewMedModal', false)" class="px-3 bg-slate-100 dark:bg-slate-800 text-xs rounded-xl font-semibold">
           إلغاء
         </button>
@@ -1701,7 +1704,7 @@
         </div>
       </div>
 
-   <!-- خانات إدخال وتفصيل الصنف (علب - أشرطة - أقراص) -->
+   <!-- خانات إدخال وتفصيل الصنف المطور (علب - أشرطة - أقراص - باركود - شكل دوائي) -->
       <div class="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 mb-3 flex-shrink-0 space-y-3">
         
         <!-- أزرار التبديل والعنوان -->
@@ -1715,12 +1718,12 @@
           </div>
         </div>
 
-        <!-- السطر الأول: اختيار الدواء / كتابة اسمه + التصنيف + مكان الرف -->
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+        <!-- السطر الأول: اختيار الصنف + الباركود + التصنيف + الشكل الدوائي + مكان الرف -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
           
-          <!-- خانة البحث عن صنف مسجل (السرعة الفائقة والذكاء) -->
-          <div class="sm:col-span-5 relative" id="supplyExistingBox">
-            <label class="block font-bold mb-1">1. ابحث عن الصنف المسجل (اسم أو باركود)</label>
+          <!-- خانة البحث عن صنف مسجل -->
+          <div class="sm:col-span-4 relative" id="supplyExistingBox">
+            <label class="block font-bold mb-1">1. ابحث عن الصنف المسجل</label>
             <div class="relative">
               <input 
                 type="text" 
@@ -1735,45 +1738,72 @@
           </div>
 
           <!-- خانة كتابة اسم صنف جديد -->
-          <div class="sm:col-span-5 hidden" id="supplyNewBox">
-            <label class="block font-bold mb-1">1. اسم الصنف الجديد</label>
-            <input type="text" id="supplyNewNameInput" placeholder="اكتب اسم الصنف الجديد..." class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 px-2.5 font-bold focus:outline-none focus:ring-2 focus:ring-teal-500">
+          <div class="sm:col-span-4 hidden" id="supplyNewBox">
+            <label class="block font-bold mb-1">1. اسم الصنف الجديد *</label>
+            <input type="text" id="supplyNewNameInput" placeholder="اكتب اسم الصنف بدقة..." class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 px-2.5 font-bold focus:outline-none focus:ring-2 focus:ring-teal-500">
           </div>
 
-          <!-- التصنيف -->
-          <div class="sm:col-span-3">
-            <label class="block font-bold mb-1">2. النوع / التصنيف</label>
-            <select id="supplyCategorySelect" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 px-2.5 font-semibold focus:outline-none">
+          <!-- خانة الباركود الدولي -->
+          <div class="sm:col-span-2">
+            <label class="block font-bold mb-1 flex items-center justify-between">
+              <span>الباركود الدولي</span>
+              <i class="fa-solid fa-barcode text-teal-600 text-xs"></i>
+            </label>
+            <input type="text" id="supplyBarcodeInput" placeholder="امسح أو اكتب..." class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 px-2.5 font-mono font-bold text-teal-700 dark:text-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+
+          <!-- التصنيف الأساسي -->
+          <div class="sm:col-span-2">
+            <label class="block font-bold mb-1">2. التصنيف الأساسي</label>
+            <select id="supplyCategorySelect" onchange="handleSupplyCategoryChange()" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 px-2 font-semibold focus:outline-none">
               <option value="أدوية بشرية">أدوية بشرية</option>
               <option value="مستلزمات طبية">مستلزمات طبية</option>
               <option value="مستحضرات تجميل">مستحضرات تجميل</option>
+              <option value="عناية شخصية">عناية شخصية</option>
               <option value="ألبان وأغذية أطفال">ألبان وأغذية أطفال</option>
             </select>
           </div>
 
+          <!-- الشكل الدوائي (يظهر حصرياً عند اختيار أدوية بشرية) -->
+          <div class="sm:col-span-2" id="supplySubCategoryBox">
+            <label class="block font-bold mb-1 text-teal-700 dark:text-teal-400">الشكل الدوائي *</label>
+            <select id="supplySubCategorySelect" onchange="handleSupplyCategoryChange()" class="w-full bg-teal-50/70 dark:bg-slate-900 border border-teal-300 dark:border-teal-700 rounded-xl py-1.5 px-2 font-bold text-teal-950 dark:text-teal-200 focus:outline-none">
+  <option value="أقراص">أقراص / كبسول</option>
+  <option value="شراب">شراب</option>
+  <option value="قطرة">قطرة</option>
+  <option value="حقن">حقن</option>
+  <option value="مرهم">مرهم</option>
+  <option value="لبوس">لبوس</option>
+  <option value="دواء بشكل عام">دواء بشكل عام</option>
+</select>
+          </div>
+
           <!-- مكان الرف -->
-          <div class="sm:col-span-4">
+          <div class="sm:col-span-2">
             <label class="block font-bold mb-1">مكان الرف</label>
             <input type="text" id="supplyShelfInput" value="رف A-1" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 px-2.5 font-semibold focus:outline-none">
           </div>
         </div>
 
-        <!-- السطر الثاني: تقسيم العبوات (العلب، الأشرطة في العلبة، الأقراص في الشريط) -->
+        <!-- السطر الثاني: تقسيم العبوات (يتحول ديناميكياً للعلب فقط أو القطع فقط) -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white dark:bg-slate-900/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
           <div>
-            <label class="block font-bold text-teal-700 dark:text-teal-400 mb-0.5">عدد العلب المستلمة *</label>
+            <label id="supplyQuantityLabel" class="block font-bold text-teal-700 dark:text-teal-400 mb-0.5">عدد العلب المستلمة *</label>
             <input type="number" id="supplyBoxesCount" value="10" min="1" oninput="calculateSupplyUnitsPreview()" class="w-full bg-slate-50 dark:bg-slate-800 border rounded-lg py-1 px-2 font-mono font-bold text-center">
           </div>
-          <div>
-            <label class="block font-bold text-slate-600 dark:text-slate-300 mb-0.5">أشرطة في العلبة *</label>
+          
+          <div id="supplyStripsCol">
+            <label id="supplyStripsLabel" class="block font-bold text-slate-600 dark:text-slate-300 mb-0.5">أشرطة في العلبة *</label>
             <input type="number" id="supplyStripsPerBox" value="2" min="1" oninput="calculateSupplyUnitsPreview()" class="w-full bg-slate-50 dark:bg-slate-800 border rounded-lg py-1 px-2 font-mono font-bold text-center">
           </div>
-          <div>
-            <label class="block font-bold text-slate-600 dark:text-slate-300 mb-0.5">أقراص/أمبول في الشريط *</label>
+          
+          <div id="supplyTabletsCol">
+            <label id="supplyTabletsLabel" class="block font-bold text-slate-600 dark:text-slate-300 mb-0.5">أقراص/أمبول في الشريط *</label>
             <input type="number" id="supplyTabletsPerStrip" value="10" min="1" oninput="calculateSupplyUnitsPreview()" class="w-full bg-slate-50 dark:bg-slate-800 border rounded-lg py-1 px-2 font-mono font-bold text-center">
           </div>
+          
           <div class="col-span-2 sm:col-span-1 flex flex-col justify-center text-center bg-teal-50 dark:bg-teal-950/40 rounded-lg p-1 border border-teal-100 dark:border-teal-900/50">
-            <span class="text-[9px] text-slate-500">إجمالي الوحدات الصغرى:</span>
+            <span class="text-[9px] text-slate-500" id="supplyPreviewLabel">إجمالي الوحدات:</span>
             <span id="supplyTotalTabletsPreview" class="font-mono font-black text-xs text-teal-700 dark:text-teal-300">200 قرص</span>
           </div>
         </div>
@@ -1789,11 +1819,11 @@
             <input type="date" id="supplyExpiryDate" value="2028-10-01" class="w-full bg-white dark:bg-slate-900 border rounded-lg py-1 px-2 font-mono font-bold">
           </div>
           <div>
-            <label class="block font-semibold mb-0.5">سعر شراء العلبة (ج.م)</label>
+            <label id="supplyCostPriceLabel" class="block font-semibold mb-0.5">سعر شراء العلبة (ج.م)</label>
             <input type="number" id="supplyCostPrice" step="0.5" value="70.00" class="w-full bg-white dark:bg-slate-900 border rounded-lg py-1 px-2 font-mono font-bold">
           </div>
           <div>
-            <label class="block font-semibold mb-0.5">سعر بيع العلبة (ج.م)</label>
+            <label id="supplyRetailPriceLabel" class="block font-semibold mb-0.5">سعر بيع العلبة (ج.م)</label>
             <input type="number" id="supplyRetailPrice" step="0.5" value="95.00" class="w-full bg-white dark:bg-slate-900 border rounded-lg py-1 px-2 font-mono font-bold">
           </div>
           <div class="col-span-2 sm:col-span-1">
@@ -1804,7 +1834,6 @@
         </div>
 
       </div>
-
       <!-- جدول الأصناف المدرجة بالشحنة -->
       <div class="flex-grow overflow-y-auto border rounded-xl mb-3">
         <table class="w-full text-right text-[11px]">
@@ -3184,76 +3213,102 @@ async function importAllMedicinesFromExcel(event) {
   }
 }
 
+let lastUsedShelf = "رف A-1"; // لتثبيت الرف تلقائياً أثناء الجرد
+
 function openAddNewMedicineToInventoryModal() {
   document.getElementById("newMedNameInput").value = "";
   document.getElementById("newMedScientificInput").value = "";
   document.getElementById("newMedBarcodeInput").value = "";
+  document.getElementById("newMedRetailPriceInput").value = "";
+  document.getElementById("newMedCostPriceInput").value = "";
+  document.getElementById("newMedInitialBoxesInput").value = "5";
+  document.getElementById("newMedShelfInput").value = lastUsedShelf;
   toggleModal("addNewMedModal", true);
+  setTimeout(() => document.getElementById("newMedBarcodeInput").focus(), 150);
 }
 
-async function saveNewMedicineToInventory() {
-      // حظر أمني: إضافة أدوية جديدة للمخزن مخصصة للمدير فقط
-      if (!requireAdminPermission("إضافة صنف جديد للدليل")) return;
+// حساب سعر التكلفة تلقائياً بمجرد إدخال سعر البيع (خصم 25%)
+document.getElementById("newMedRetailPriceInput")?.addEventListener("input", function() {
+  const retail = parseFloat(this.value) || 0;
+  const costInput = document.getElementById("newMedCostPriceInput");
+  if (retail > 0 && (!costInput.value || costInput.dataset.auto === "true")) {
+    costInput.value = (retail * 0.75).toFixed(2);
+    costInput.dataset.auto = "true";
+  }
+});
 
-      const name = document.getElementById("newMedNameInput").value.trim();
-      const scientificName = document.getElementById("newMedScientificInput").value.trim() || name;
-      let barcode = document.getElementById("newMedBarcodeInput").value.trim();
-      const category = document.getElementById("newMedCategorySelect").value;
-      const shelfLocation = document.getElementById("newMedShelfInput").value.trim() || "المستودع الرئيسي";
-      const boxPrice = parseFloat(document.getElementById("newMedRetailPriceInput").value) || 0;
-      const boxCost = parseFloat(document.getElementById("newMedCostPriceInput").value) || 0;
-      const initialBoxes = parseInt(document.getElementById("newMedInitialBoxesInput").value) || 0;
+async function saveNewMedicineToInventory(keepOpen = false) {
+  if (!requireAdminPermission("إضافة صنف جديد للدليل")) return;
 
-      if (!name || boxPrice <= 0) {
-        showToast("خطأ", "يرجى كتابة اسم الدواء وسعر البيع للجمهور!", "warning");
-        return;
-      }
+  const name = document.getElementById("newMedNameInput").value.trim();
+  const scientificName = document.getElementById("newMedScientificInput").value.trim() || name;
+  let barcode = document.getElementById("newMedBarcodeInput").value.trim();
+  const category = document.getElementById("newMedCategorySelect").value;
+  const shelfLocation = document.getElementById("newMedShelfInput").value.trim() || "المستودع الرئيسي";
+  const boxPrice = parseFloat(document.getElementById("newMedRetailPriceInput").value) || 0;
+  const boxCost = parseFloat(document.getElementById("newMedCostPriceInput").value) || (boxPrice * 0.75);
+  const initialBoxes = parseInt(document.getElementById("newMedInitialBoxesInput").value) || 0;
 
-      if (!barcode) barcode = Math.floor(100000000000 + Math.random() * 900000000000).toString();
-      const code = "MED-" + Math.floor(1000 + Math.random() * 9000);
+  if (!name || boxPrice <= 0) {
+    showToast("خطأ", "يرجى كتابة اسم الدواء وسعر البيع للجمهور!", "warning");
+    return;
+  }
 
-      await db.medicines.add({
-        code: code,
-        barcode: barcode,
-        name: name,
-        scientificName: scientificName,
-        category: category,
-        shelfLocation: shelfLocation,
-        stripsPerBox: 2,
-        tabletsPerStrip: 10,
-        boxPrice: boxPrice,
-        boxCost: boxCost,
-        minSafetyStock: 10,
-        leadTimeDays: 2,
-        dailyConsumption: 2,
-        preferredSupplier: "الموزع المعتمد",
-        bonusScheme: "-",
-        isControlled: false
-      });
+  if (!barcode) barcode = Math.floor(100000000000 + Math.random() * 900000000000).toString();
+  const code = "MED-" + Math.floor(1000 + Math.random() * 9000);
+  lastUsedShelf = shelfLocation;
 
-      if (initialBoxes > 0) {
-        await db.batches.add({
-          medCode: code,
-          batchNo: "BAT-" + Math.floor(1000 + Math.random() * 9000),
-          expiryDate: "2028-12-31",
-          totalTablets: initialBoxes * 20,
-          costPerBox: boxCost
-        });
-      }
+  const medData = {
+    code: code,
+    barcode: barcode,
+    name: name,
+    scientificName: scientificName,
+    category: category,
+    shelfLocation: shelfLocation,
+    stripsPerBox: 2,
+    tabletsPerStrip: 10,
+    boxPrice: boxPrice,
+    boxCost: boxCost,
+    minSafetyStock: 5,
+    leadTimeDays: 2,
+    dailyConsumption: 1,
+    preferredSupplier: "الموزع المعتمد",
+    bonusScheme: "-",
+    isControlled: false
+  };
 
-      const newMedRecord = await db.medicines.get(code);
-      if (newMedRecord) syncMedicineToCloud(newMedRecord);
-      if (initialBoxes > 0) {
-        const newBatchRecord = await db.batches.where("medCode").equals(code).first();
-        if (newBatchRecord) syncBatchToCloud(newBatchRecord);
-      }
+  await db.medicines.add(medData);
 
-      logAudit("إضافة دواء للدليل", `تمت إضافة (${name}) برصيد ${initialBoxes} علبة في ${shelfLocation}`);
-      showToast("تم الحفظ", `تمت إضافة (${name}) إلى دليل الأدوية والمخزون بنجاح`, "success");
+  if (initialBoxes > 0) {
+    const batchData = {
+      medCode: code,
+      batchNo: "BAT-INIT",
+      expiryDate: "2028-12-31",
+      totalTablets: initialBoxes * 20,
+      costPerBox: boxCost,
+      retailPrice: boxPrice
+    };
+    await db.batches.add(batchData);
+    if (typeof syncBatchToCloud === "function") syncBatchToCloud(batchData);
+  }
 
-      toggleModal("addNewMedModal", false);
-      loadAllMedicinesStock();
-    }
+  if (typeof syncMedicineToCloud === "function") syncMedicineToCloud(medData);
+
+  showToast("تم الحفظ بنجاح ✓", `تم إدراج (${name}) برصيد ${initialBoxes} علبة`, "success");
+  loadAllMedicinesStock();
+
+  if (keepOpen) {
+    document.getElementById("newMedNameInput").value = "";
+    document.getElementById("newMedScientificInput").value = "";
+    document.getElementById("newMedBarcodeInput").value = "";
+    document.getElementById("newMedRetailPriceInput").value = "";
+    document.getElementById("newMedCostPriceInput").value = "";
+    document.getElementById("newMedInitialBoxesInput").value = "5";
+    document.getElementById("newMedBarcodeInput").focus();
+  } else {
+    toggleModal("addNewMedModal", false);
+  }
+}
 
     async function editMedicineDirectly(code) {
       const med = await db.medicines.get(code);
@@ -3320,7 +3375,7 @@ async function saveFullStockUpdate() {
   const retailPrice = parseFloat(document.getElementById("editStockRetailPrice").value) || 0;
   const costPrice = parseFloat(document.getElementById("editStockCostPrice").value) || 0;
   const shelf = document.getElementById("editStockShelf").value.trim();
-  const safety = parseInt(document.getElementById("editStockSafetyLimit").value) || 5;
+  const safety = parseInt(document.getElementById("editStockSafetyLimit").value) || 2;
   const newBoxes = parseInt(document.getElementById("editStockBoxesCount").value) || 0;
   const expiry = document.getElementById("editStockExpiryDate").value || "2028-12-31";
 
@@ -3651,27 +3706,129 @@ function setupSearchInput() {
       document.getElementById("noItemSelectedBox").classList.add("hidden");
       document.getElementById("itemSelectBox").classList.remove("hidden");
       document.getElementById("cardItemName").innerText = med.name;
-      document.getElementById("cardScientificName").innerText = `${med.category} • ${med.scientificName}`;
-      document.getElementById("cardItemCode").innerText = `كود: ${med.code} • الباركود: ${med.barcode}`;
+      
+      const subInfo = med.subCategory ? ` (${med.subCategory})` : '';
+      document.getElementById("cardScientificName").innerText = `${med.category}${subInfo} • ${med.scientificName}`;
+      document.getElementById("cardItemCode").innerText = `كود: ${med.code} • الباركود: ${med.barcode || '-'}`;
       document.getElementById("cardBatchCode").innerText = `${currentSelectedBatch.batchNo} (${currentSelectedBatch.expiryDate})`;
       document.getElementById("cardShelfLocation").innerText = med.shelfLocation || "غير محدد";
 
-      // تفعيل تنبيهات الرقابة الدوائية وجدول المخدرات
+      // فحص أدوية الجدول والرقابة
       const isControlled = !!med.isControlled;
       document.getElementById("controlledWarningBanner").classList.toggle("hidden", !isControlled);
       document.getElementById("controlledTag").classList.toggle("hidden", !isControlled);
 
-const stock = await calculateAvailableStock(med.code);
-      let stockFormattedText = `${stock.boxes} علبة`;
-      if (stock.strips > 0) stockFormattedText += `، ${stock.strips} شريط`;
-      if (stock.tablets > 0) stockFormattedText += `، ${stock.tablets} قرص`;
+      // ================= تحديد تقسيم الوحدات وأسمائها =================
+      const stripsPerBox = Math.max(1, Number(med.stripsPerBox) || 1);
+      const tabletsPerStrip = Math.max(1, Number(med.tabletsPerStrip) || 1);
+      const totalUnitsPerBox = stripsPerBox * tabletsPerStrip;
+
+      const cat = med.category;
+      const sub = med.subCategory || "";
+
+      // تحديد مسميات الوحدات الثلاث
+      let majorName = "علبة";
+      let mediumName = "شريط";
+      let smallName = "قرص";
+
+      if (cat === "أدوية بشرية") {
+        if (sub === "حقن") {
+          mediumName = "درج";
+          smallName = "أمبول";
+        } else if (sub === "لبوس") {
+          mediumName = "شريط";
+          smallName = "قمع";
+        } else if (sub === "أقراص") {
+          mediumName = "شريط";
+          smallName = "قرص";
+        }
+      } else if (cat === "مستلزمات طبية" || cat === "مستحضرات تجميل" || cat === "عناية شخصية") {
+        mediumName = "باكت";
+        smallName = "قطعة";
+      }
+
+      // هل الصنف مخصص للعلبة فقط بدون تجزئة؟ (شراب / ألبان / مرهم / دواء عام)
+      // هل الصنف مخصص للعلبة فقط بدون تجزئة؟ (شراب / قطرة / ألبان / مرهم / دواء عام)
+      const isBoxOnly = (cat === "أدوية بشرية" && (sub === "شراب" || sub === "قطرة" || sub === "مرهم" || sub === "دواء بشكل عام")) ||
+                        (cat === "ألبان وأغذية أطفال") ||
+                        (stripsPerBox === 1 && tabletsPerStrip === 1);
+
+      // 1. صياغة وعرض الرصيد المتاح بذكاء
+      const stock = await calculateAvailableStock(med.code);
+      let stockFormattedText = "";
+
+      if (isBoxOnly) {
+        stockFormattedText = `${stock.boxes} علبة`;
+      } else {
+        stockFormattedText = `${stock.boxes} علبة`;
+        if (stripsPerBox > 1 && stock.strips > 0) {
+          stockFormattedText += ` و ${stock.strips} ${mediumName}`;
+        }
+        if (stock.tablets > 0) {
+          stockFormattedText += ` و ${stock.tablets} ${smallName}`;
+        }
+        stockFormattedText += ` (إجمالي: ${stock.totalTablets} ${smallName})`;
+      }
       if (stock.totalTablets === 0) stockFormattedText = "0 (نفد الرصيد)";
       document.getElementById("cardStockFormatted").innerText = stockFormattedText;
 
+      // 2. الحساب التلقائي لأسعار الوحدات الثلاث
+      const boxPrice = (currentSelectedBatch && currentSelectedBatch.retailPrice) 
+        ? currentSelectedBatch.retailPrice 
+        : Number(med.boxPrice || 0);
+
+      // سعر الوحدة المتوسطة = سعر العلبة ÷ عدد الوحدات المتوسطة
+      const mediumPrice = stripsPerBox > 1 ? (boxPrice / stripsPerBox) : boxPrice;
+      // سعر الوحدة الصغرى = سعر العلبة ÷ إجمالي الوحدات الصغرى
+      const smallPrice = totalUnitsPerBox > 1 ? (boxPrice / totalUnitsPerBox) : boxPrice;
+
+      // 3. التحكم في أزرار وحدة الصرف مع كتابة السعر المحسوب على كل زر
+      const btnBox = document.getElementById("btnUnit-box");
+      const btnStrip = document.getElementById("btnUnit-strip");
+      const btnTablet = document.getElementById("btnUnit-tablet");
+      const unitGroup = document.getElementById("unitSelectorGroup");
+
+      if (isBoxOnly) {
+        // علبة فقط
+        btnBox.innerHTML = `<span>${majorName}</span><span class="block text-[10px] opacity-75 font-mono">${boxPrice.toFixed(2)} ج.م</span>`;
+        btnBox.classList.remove("hidden");
+        btnStrip.classList.add("hidden");
+        btnTablet.classList.add("hidden");
+        unitGroup.className = "grid grid-cols-1 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold";
+      } else if (stripsPerBox > 1 && tabletsPerStrip > 1) {
+        // المستويات الثلاثة كاملة (علبة + شريط/درج + قرص/أمبول/قطعة)
+        btnBox.innerHTML = `<span>${majorName}</span><span class="block text-[10px] opacity-75 font-mono">${boxPrice.toFixed(2)} ج.م</span>`;
+        btnStrip.innerHTML = `<span>${mediumName}</span><span class="block text-[10px] opacity-75 font-mono">${mediumPrice.toFixed(2)} ج.م</span>`;
+        btnTablet.innerHTML = `<span>${smallName}</span><span class="block text-[10px] opacity-75 font-mono">${smallPrice.toFixed(2)} ج.م</span>`;
+
+        btnBox.classList.remove("hidden");
+        btnStrip.classList.remove("hidden");
+        btnTablet.classList.remove("hidden");
+        unitGroup.className = "grid grid-cols-3 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold";
+      } else if (stripsPerBox === 1 && tabletsPerStrip > 1) {
+        // مستويان فقط (علبة + وحدة صغرى مباشرة مثل مستلزمات طبية علبة فيها قطع بدون باكت)
+        btnBox.innerHTML = `<span>${majorName}</span><span class="block text-[10px] opacity-75 font-mono">${boxPrice.toFixed(2)} ج.م</span>`;
+        btnTablet.innerHTML = `<span>${smallName}</span><span class="block text-[10px] opacity-75 font-mono">${smallPrice.toFixed(2)} ج.م</span>`;
+
+        btnBox.classList.remove("hidden");
+        btnTablet.classList.remove("hidden");
+        btnStrip.classList.add("hidden");
+        unitGroup.className = "grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold";
+      } else {
+        // مستويان (علبة + شريط فقط)
+        btnBox.innerHTML = `<span>${majorName}</span><span class="block text-[10px] opacity-75 font-mono">${boxPrice.toFixed(2)} ج.م</span>`;
+        btnStrip.innerHTML = `<span>${mediumName}</span><span class="block text-[10px] opacity-75 font-mono">${mediumPrice.toFixed(2)} ج.م</span>`;
+
+        btnBox.classList.remove("hidden");
+        btnStrip.classList.remove("hidden");
+        btnTablet.classList.add("hidden");
+        unitGroup.className = "grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold";
+      }
+
+      // حساب هامش الربح
       const margin = ((med.boxPrice - med.boxCost) / med.boxPrice) * 100;
       document.getElementById("cardMarginFormatted").innerText = currentUser?.role === "admin" ? `${margin.toFixed(1)}%` : "***";
 
-      // إظهار ملخص أرباح السلة للمدير فقط
       const adminProfitSummary = document.getElementById("adminCartMarginSummary");
       if (adminProfitSummary) {
         adminProfitSummary.classList.toggle("hidden", currentUser?.role !== "admin");
@@ -3679,7 +3836,6 @@ const stock = await calculateAvailableStock(med.code);
 
       setSaleUnit('box');
     }
-
     // دالة عرض بدائل ومثائل الصنف
 async function openEquivalentsModal() {
   if (!currentSelectedMed) return;
@@ -3727,10 +3883,12 @@ async function openEquivalentsModal() {
       selectedUnitType = unit;
       ['box', 'strip', 'tablet'].forEach(u => {
         const btn = document.getElementById(`btnUnit-${u}`);
+        if (!btn) return;
+        const isHidden = btn.classList.contains("hidden");
         if (u === unit) {
-          btn.className = "py-1.5 rounded-lg bg-white dark:bg-slate-900 text-brand-600 shadow-sm transition-all text-center font-bold";
+          btn.className = "py-1.5 rounded-lg bg-white dark:bg-slate-900 text-brand-600 shadow-sm transition-all text-center font-bold" + (isHidden ? " hidden" : "");
         } else {
-          btn.className = "py-1.5 rounded-lg text-slate-500 hover:text-slate-900 transition-all text-center";
+          btn.className = "py-1.5 rounded-lg text-slate-500 hover:text-slate-900 transition-all text-center font-semibold" + (isHidden ? " hidden" : "");
         }
       });
       calculateLineTotal();
@@ -3743,27 +3901,37 @@ async function openEquivalentsModal() {
       calculateLineTotal();
     }
 
- function calculateLineTotal() {
-  if (!currentSelectedMed) return;
-  const qty = parseInt(document.getElementById("saleQtyInput").value) || 1;
+    function calculateLineTotal() {
+      if (!currentSelectedMed) return;
+      const qty = parseInt(document.getElementById("saleQtyInput").value) || 1;
 
-  // قراءة سعر بيع الدفعة الحالية القديمة إن وجد، وإلا نستخدم السعر الافتراضي
-  const effectiveBoxPrice = (currentSelectedBatch && currentSelectedBatch.retailPrice) 
-    ? currentSelectedBatch.retailPrice 
-    : currentSelectedMed.boxPrice;
+      // قراءة سعر بيع العلبة
+      const effectiveBoxPrice = (currentSelectedBatch && currentSelectedBatch.retailPrice) 
+        ? currentSelectedBatch.retailPrice 
+        : Number(currentSelectedMed.boxPrice || 0);
 
-  let unitPrice = effectiveBoxPrice;
+      const stripsPerBox = Math.max(1, Number(currentSelectedMed.stripsPerBox) || 1);
+      const tabletsPerStrip = Math.max(1, Number(currentSelectedMed.tabletsPerStrip) || 1);
+      const totalUnitsPerBox = stripsPerBox * tabletsPerStrip;
 
-  if (selectedUnitType === 'strip') {
-    unitPrice = effectiveBoxPrice / (currentSelectedMed.stripsPerBox || 1);
-  } else if (selectedUnitType === 'tablet') {
-    unitPrice = effectiveBoxPrice / ((currentSelectedMed.stripsPerBox || 1) * (currentSelectedMed.tabletsPerStrip || 1));
-  }
+      let unitPrice = effectiveBoxPrice;
 
-  document.getElementById("unitPriceDisplay").innerText = `${unitPrice.toFixed(2)} ج.م`;
-  document.getElementById("lineTotalAmount").innerText = (unitPrice * qty).toFixed(2);
-}
+      // 1. اختيار العلبة (الوحدة الكبرى)
+      if (selectedUnitType === 'box') {
+        unitPrice = effectiveBoxPrice;
+      } 
+      // 2. اختيار الوحدة المتوسطة (شريط / درج / باكت)
+      else if (selectedUnitType === 'strip') {
+        unitPrice = effectiveBoxPrice / stripsPerBox;
+      } 
+      // 3. اختيار الوحدة الصغرى (قرص / أمبول / قمع / قطعة)
+      else if (selectedUnitType === 'tablet') {
+        unitPrice = effectiveBoxPrice / totalUnitsPerBox;
+      }
 
+      document.getElementById("unitPriceDisplay").innerText = `${unitPrice.toFixed(2)} ج.م`;
+      document.getElementById("lineTotalAmount").innerText = (unitPrice * qty).toFixed(2);
+    }
 async function handleAddToCartClick() {
   if (!currentSelectedMed) return;
 
@@ -3848,7 +4016,28 @@ async function handleAddToCartClick() {
       batchNo: batch.batchNo,
       expiryDate: batch.expiryDate,
       unit: selectedUnitType,
-      unitText: selectedUnitType === 'box' ? 'علبة' : (selectedUnitType === 'strip' ? 'شريط' : 'قرص'),
+      unitText: (() => {
+        const cat = currentSelectedMed.category;
+        const sub = currentSelectedMed.subCategory || "";
+
+        if (selectedUnitType === 'box') return "علبة";
+
+        if (selectedUnitType === 'strip') {
+          if (cat === "أدوية بشرية" && sub === "حقن") return "درج";
+          if (cat === "مستلزمات طبية" || cat === "مستحضرات تجميل" || cat === "عناية شخصية") return "باكت";
+          return "شريط";
+        }
+
+        if (selectedUnitType === 'tablet') {
+          if (cat === "أدوية بشرية") {
+            if (sub === "حقن") return "أمبول";
+            if (sub === "لبوس") return "قمع";
+            if (sub === "أقراص") return "قرص";
+          }
+          return "قطعة";
+        }
+        return "علبة";
+      })(),
       qty: Number(lineQty.toFixed(2)),
       tabletsDeducted: takeTablets,
       price: unitPrice,
@@ -4189,56 +4378,74 @@ async function processReturnInvoice(invoiceNo) {
   const inv = await db.invoices.where("invoiceNo").equals(invoiceNo).first();
   if (!inv || inv.status === "مرتجع") return;
 
-  // 1. إعادة الأقراص والكميات لرصيد المخزن وفق التشغيلات الفعلية المسجلة بالفاتورة
+  // 1. إعادة الكميات لرصيد المخزن والتشغيلات
   if (inv.items && Array.isArray(inv.items)) {
     for (const it of inv.items) {
       if (it.deductedBatches && it.deductedBatches.length > 0) {
         for (const d of it.deductedBatches) {
           let batch = await db.batches.get(d.batchId);
           if (!batch) {
-            batch = await db.batches.where("medCode").equals(it.code).and(b => b.batchNo === d.batchNo).first();
-          }
-          if (!batch) {
             batch = await db.batches.where("medCode").equals(it.code).first();
           }
           if (batch) {
-            const updatedTablets = batch.totalTablets + d.deductedTablets;
+            const updatedTablets = (batch.totalTablets || 0) + (d.deductedTablets || 0);
             await db.batches.update(batch.id, { totalTablets: updatedTablets });
-            syncBatchToCloud({ ...batch, totalTablets: updatedTablets });
+            if (typeof syncBatchToCloud === "function") syncBatchToCloud({ ...batch, totalTablets: updatedTablets });
           }
         }
       } else {
-        let batch = await db.batches.where("medCode").equals(it.code).and(b => b.batchNo === it.batchNo).first();
-        if (!batch) {
-          batch = await db.batches.where("medCode").equals(it.code).first();
-        }
+        let batch = await db.batches.where("medCode").equals(it.code).first();
         if (batch) {
-          const updatedTablets = batch.totalTablets + (it.tabletsDeducted || it.qty);
+          const qtyToAdd = it.tabletsDeducted || (it.qty * (batch.tabletsPerStrip || 10));
+          const updatedTablets = (batch.totalTablets || 0) + qtyToAdd;
           await db.batches.update(batch.id, { totalTablets: updatedTablets });
-          syncBatchToCloud({ ...batch, totalTablets: updatedTablets });
+          if (typeof syncBatchToCloud === "function") syncBatchToCloud({ ...batch, totalTablets: updatedTablets });
         }
       }
     }
   }
 
-  // 2. تسوية النقدية: الخصم يتم فقط إذا كانت الفاتورة تابعة لنفس الوردية الحالية
+  // 2. معالجة حركة النقدية لمنع عجز تقفيل الوردية Z
+  const cashToRefund = inv.cashPaid || 0;
+
   if (inv.shiftId === currentShift.id) {
-    currentShift.cashSales = Math.max(0, currentShift.cashSales - (inv.cashPaid || 0));
+    currentShift.cashSales = Math.max(0, currentShift.cashSales - cashToRefund);
     currentShift.cardSales = Math.max(0, currentShift.cardSales - (inv.cardPaid || 0));
     currentShift.walletSales = Math.max(0, currentShift.walletSales - (inv.walletPaid || 0));
     if (currentShift.creditSales) {
       currentShift.creditSales = Math.max(0, currentShift.creditSales - (inv.creditPaid || 0));
     }
     saveShiftState();
-    logAudit("مرتجع وردية حالية", `تم استرجاع الفاتورة ${invoiceNo} وخصم قيمتها من كاش الوردية الحالية #${currentShift.id}`);
+    logAudit("مرتجع وردية حالية", `استرجاع فاتورة ${invoiceNo} بقيمة ${inv.total} ج.م`);
   } else {
-    logAudit("مرتجع وردية سابقة", `تم استرجاع فاتورة وردية سابقة (#${inv.shiftId || 'غير محدد'}) وإعادة البضاعة دون المساس بكاش الوردية الحالية`);
+    if (cashToRefund > 0) {
+      const refundExpense = {
+        shiftId: currentShift.id,
+        amount: cashToRefund,
+        category: "مرتجع مبيعات",
+        notes: `رد نقدية لمرتجع فاتورة سابقة رقم (${invoiceNo})`,
+        recipient: inv.customerName || "عميل",
+        receiptImage: null,
+        date: getEgyptISODate(),
+        time: getEgyptTimeString(new Date(), { hour: '2-digit', minute: '2-digit' }),
+        user: currentUser ? currentUser.name : "الكاشير"
+      };
+
+      await db.expenses.add(refundExpense);
+      if (typeof syncExpenseToCloud === "function") syncExpenseToCloud(refundExpense);
+
+      currentShift.totalExpenses = (currentShift.totalExpenses || 0) + cashToRefund;
+      saveShiftState();
+      refreshShiftExpensesUI();
+    }
+    logAudit("مرتجع وردية سابقة", `استرجاع فاتورة قديمة #${inv.shiftId || 'سابقة'} بمبلغ ${cashToRefund} ج.م`);
   }
 
+  // 3. تحديث حالة الفاتورة
   await db.invoices.update(inv.invoiceNo, { status: "مرتجع" });
-  syncInvoiceToCloud({ ...inv, status: "مرتجع" });
+  if (typeof syncInvoiceToCloud === "function") syncInvoiceToCloud({ ...inv, status: "مرتجع" });
 
-  showToast("تم المرتجع", `تم استرجاع الفاتورة (${invoiceNo}) وتحديث رصيد التشغيلات بنجاح`, "success");
+  showToast("تم المرتجع بنجاح", `تم استرجاع الفاتورة (${invoiceNo}) وتحديث رصيد الصنف والدرج`, "success");
   openRecentInvoicesModal();
   loadAllMedicinesStock();
 }
@@ -4708,26 +4915,124 @@ function saveShiftOpeningBalance() {
   toggleModal("shiftManagementModal", false);
 }
 // ==================== محرك شاشة استلام الشحنة المجمعة ====================
+// ==================== محرك شاشة استلام الشحنة المجمعة المطور ====================
 let currentSupplyItems = [];
 let supplyMode = 'existing';
 
+// 1. الدالة المركزية للتحكم الذكي في وحدات الاحتساب والتصنيفات
+function handleSupplyCategoryChange() {
+  const category = document.getElementById("supplyCategorySelect").value;
+  const subCategorySelect = document.getElementById("supplySubCategorySelect");
+  const subCategoryBox = document.getElementById("supplySubCategoryBox");
+
+  const stripsCol = document.getElementById("supplyStripsCol");
+  const tabletsCol = document.getElementById("supplyTabletsCol");
+  const stripsInput = document.getElementById("supplyStripsPerBox");
+  const tabletsInput = document.getElementById("supplyTabletsPerStrip");
+
+  const qtyLabel = document.getElementById("supplyQuantityLabel");
+  const costLabel = document.getElementById("supplyCostPriceLabel");
+  const retailLabel = document.getElementById("supplyRetailPriceLabel");
+  const stripsLabel = document.getElementById("supplyStripsLabel");
+  const tabletsLabel = document.getElementById("supplyTabletsLabel");
+
+  // الحالة الأولى: أدوية بشرية
+  if (category === "أدوية بشرية") {
+    subCategoryBox.classList.remove("hidden");
+    const sub = subCategorySelect.value;
+
+    if (sub === "شراب" || sub === "قطرة" || sub === "مرهم" || sub === "دواء بشكل عام") {
+      stripsCol.classList.add("hidden");
+      tabletsCol.classList.add("hidden");
+      stripsInput.value = 1;
+      tabletsInput.value = 1;
+
+      qtyLabel.innerText = "عدد العلب المستلمة *";
+      costLabel.innerText = "سعر شراء العلبة (ج.م)";
+      retailLabel.innerText = "سعر بيع العلبة (ج.م)";
+    } else if (sub === "حقن") {
+      stripsCol.classList.remove("hidden");
+      tabletsCol.classList.remove("hidden");
+      stripsLabel.innerText = "درج في العلبة *";
+      tabletsLabel.innerText = "أمبول في الدرج *";
+      qtyLabel.innerText = "عدد العلب المستلمة *";
+      costLabel.innerText = "سعر شراء العلبة (ج.م)";
+      retailLabel.innerText = "سعر بيع العلبة (ج.م)";
+    } else if (sub === "لبوس") {
+      stripsCol.classList.remove("hidden");
+      tabletsCol.classList.remove("hidden");
+      stripsLabel.innerText = "أشرطة في العلبة *";
+      tabletsLabel.innerText = "أقماع في الشريط *";
+      qtyLabel.innerText = "عدد العلب المستلمة *";
+      costLabel.innerText = "سعر شراء العلبة (ج.م)";
+      retailLabel.innerText = "سعر بيع العلبة (ج.م)";
+    } else {
+      // أقراص
+      stripsCol.classList.remove("hidden");
+      tabletsCol.classList.remove("hidden");
+      stripsLabel.innerText = "أشرطة في العلبة *";
+      tabletsLabel.innerText = "أقراص/كبسولات في الشريط *";
+      qtyLabel.innerText = "عدد العلب المستلمة *";
+      costLabel.innerText = "سعر شراء العلبة (ج.م)";
+      retailLabel.innerText = "سعر بيع العلبة (ج.م)";
+    }
+
+  // الحالة الثانية: ألبان وأغذية أطفال (بالعلبة فقط)
+  } else if (category === "ألبان وأغذية أطفال") {
+    subCategoryBox.classList.add("hidden");
+    stripsCol.classList.add("hidden");
+    tabletsCol.classList.add("hidden");
+    stripsInput.value = 1;
+    tabletsInput.value = 1;
+
+    qtyLabel.innerText = "عدد العلب المستلمة (ألبان) *";
+    costLabel.innerText = "سعر شراء العلبة (ج.م)";
+    retailLabel.innerText = "سعر بيع العلبة (ج.م)";
+
+  // الحالة الثالثة: مستلزمات طبية - مستحضرات تجميل - عناية شخصية (بالقطعة 100%)
+  } else {
+    subCategoryBox.classList.add("hidden");
+    stripsCol.classList.add("hidden");   // إخفاء خانة الأشرطة تماماً
+    tabletsCol.classList.add("hidden");  // إخفاء خانة التقسيم الداخلي
+    stripsInput.value = 1;
+    tabletsInput.value = 1;
+
+    qtyLabel.innerText = "عدد القطع الإجمالي *";
+    costLabel.innerText = "سعر شراء القطعة (ج.م)";
+    retailLabel.innerText = "سعر بيع القطعة (ج.م)";
+  }
+
+  calculateSupplyUnitsPreview();
+}
+// 2. دالة فتح نافذة استلام الشحنة وتصفير الحقول للبدء النظيف
 async function openBulkSupplyModal() {
   currentSupplyItems = [];
   document.getElementById("supplyInvoiceBadge").innerText = "SUP-" + Math.floor(100000 + Math.random() * 900000);
   document.getElementById("supplyBatchNo").value = "BAT-" + Math.floor(1000 + Math.random() * 9000);
   
-  // تصفير حقول البحث عن الصنف لتجنب تحميل كامل الأصناف
+  // تصفير البحث، الصنف، والباركود
   const searchInput = document.getElementById("supplyMedSearchInput");
   if (searchInput) searchInput.value = "";
   const hiddenCode = document.getElementById("supplySelectedMedCode");
   if (hiddenCode) hiddenCode.value = "";
+  const barcodeInput = document.getElementById("supplyBarcodeInput");
+  if (barcodeInput) barcodeInput.value = "";
+  const newNameInput = document.getElementById("supplyNewNameInput");
+  if (newNameInput) newNameInput.value = "";
+
   const dropdown = document.getElementById("supplySearchDropdown");
   if (dropdown) dropdown.classList.add("hidden");
+
+  // إعادة التعيين الافتراضي: أدوية بشرية - أقراص
+  document.getElementById("supplyCategorySelect").value = "أدوية بشرية";
+  document.getElementById("supplySubCategorySelect").value = "أقراص";
+  handleSupplyCategoryChange();
 
   renderSupplyInvoiceTable();
   toggleModal("bulkSupplyModal", true);
 }
 
+// 3. التبديل بين إضافة صنف مسجل وصنف جديد لأول مرة
 function toggleSupplyMode(mode) {
   supplyMode = mode;
   const existingBox = document.getElementById("supplyExistingBox");
@@ -4739,56 +5044,90 @@ function toggleSupplyMode(mode) {
     if (existingBox) existingBox.classList.remove("hidden");
     if (newBox) newBox.classList.add("hidden");
     if (btnExisting) btnExisting.className = "px-2.5 py-1 rounded-lg bg-teal-600 text-white font-bold";
-    if (btnNew) btnNew.className = "px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300";
-    onSupplyMedSelected();
+    if (btnNew) btnNew.className = "px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold";
   } else {
     if (existingBox) existingBox.classList.add("hidden");
     if (newBox) newBox.classList.remove("hidden");
     if (btnNew) btnNew.className = "px-2.5 py-1 rounded-lg bg-teal-600 text-white font-bold";
-    if (btnExisting) btnExisting.className = "px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300";
+    if (btnExisting) btnExisting.className = "px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold";
+    document.getElementById("supplyBarcodeInput").value = "";
+    document.getElementById("supplyNewNameInput").focus();
   }
+  handleSupplyCategoryChange();
 }
 
-// تعبئة بيانات الدواء تلقائياً بمجرد اختياره من نتائج البحث السريع
+// 4. تعبئة البيانات تلقائياً عند اختيار صنف مسجل من محرك البحث
 async function onSupplyMedSelected(med) {
   if (!med) return;
   document.getElementById("supplySelectedMedCode").value = med.code;
   document.getElementById("supplyMedSearchInput").value = med.name;
+  document.getElementById("supplyBarcodeInput").value = med.barcode || "";
   document.getElementById("supplyStripsPerBox").value = med.stripsPerBox || 2;
   document.getElementById("supplyTabletsPerStrip").value = med.tabletsPerStrip || 10;
   document.getElementById("supplyCostPrice").value = med.boxCost || 50;
   document.getElementById("supplyRetailPrice").value = med.boxPrice || 70;
   document.getElementById("supplyShelfInput").value = med.shelfLocation || "رف A-1";
-  document.getElementById("supplyCategorySelect").value = med.category || "أدوية بشرية";
-  calculateSupplyUnitsPreview();
+  
+  if (med.category) {
+    document.getElementById("supplyCategorySelect").value = med.category;
+  }
+  if (med.subCategory) {
+    document.getElementById("supplySubCategorySelect").value = med.subCategory;
+  }
+  handleSupplyCategoryChange();
 }
 
-// دالة حساب معاينة الوحدات الصغرى (أقراص/أشرطة)
+// 5. حساب معاينة الوحدات الإجمالية لحظياً أثناء كتابة الأرقام
 function calculateSupplyUnitsPreview() {
+  const category = document.getElementById("supplyCategorySelect").value;
+  const sub = document.getElementById("supplySubCategorySelect").value;
   const boxes = parseInt(document.getElementById("supplyBoxesCount").value) || 0;
   const strips = parseInt(document.getElementById("supplyStripsPerBox").value) || 1;
   const tablets = parseInt(document.getElementById("supplyTabletsPerStrip").value) || 1;
-  const total = boxes * strips * tablets;
   const preview = document.getElementById("supplyTotalTabletsPreview");
-  if (preview) {
-    preview.innerText = `${total} قرص (${boxes * strips} شريط)`;
+  if (!preview) return;
+
+  if (category === "أدوية بشرية" && (sub === "شراب" || sub === "قطرة")) {
+    preview.innerText = sub === "قطرة" ? `${boxes} علبة قطرة` : `${boxes} علبة شراب`;
+    preview.innerText = `${boxes} علبة شراب`;
+  } else if (category === "ألبان وأغذية أطفال") {
+    preview.innerText = `${boxes} علبة لبن`;
+  } else if (["مستلزمات طبية", "مستحضرات تجميل", "عناية شخصية"].includes(category)) {
+    preview.innerText = `${boxes} قطعة`;
+  } else {
+    const totalUnits = boxes * strips * tablets;
+    const unitWord = sub === "حقن" ? "أمبول" : (sub === "لبوس" ? "قمع" : "قرص");
+    preview.innerText = `${totalUnits} ${unitWord} (${boxes * strips} شريط)`;
   }
 }
 
-// إضافة الصنف لجدول الشحنة الحالية بدقة وسرعة
+// 6. إضافة الصنف إلى جدول الفاتورة المؤقتة
 async function addItemToSupplyInvoice() {
+  const category = document.getElementById("supplyCategorySelect").value;
+  const subCategory = (category === "أدوية بشرية") ? document.getElementById("supplySubCategorySelect").value : "";
+  const barcode = document.getElementById("supplyBarcodeInput").value.trim();
+  const shelf = document.getElementById("supplyShelfInput").value.trim() || "رف A-1";
+
   const boxes = parseInt(document.getElementById("supplyBoxesCount").value) || 0;
-  const stripsPerBox = parseInt(document.getElementById("supplyStripsPerBox").value) || 1;
-  const tabletsPerStrip = parseInt(document.getElementById("supplyTabletsPerStrip").value) || 1;
+  let stripsPerBox = parseInt(document.getElementById("supplyStripsPerBox").value) || 1;
+  let tabletsPerStrip = parseInt(document.getElementById("supplyTabletsPerStrip").value) || 1;
+
+  // تثبيت الوحدات للشراب والألبان والمستلزمات لتكون علبة أو قطعة فقط
+  const isBoxOnly = (category === "أدوية بشرية" && subCategory === "شراب") || (category === "ألبان وأغذية أطفال");
+  const isPieceOnly = ["مستلزمات طبية", "مستحضرات تجميل", "عناية شخصية"].includes(category);
+
+  if (isBoxOnly || isPieceOnly) {
+    stripsPerBox = 1;
+    tabletsPerStrip = 1;
+  }
+
   const costPrice = parseFloat(document.getElementById("supplyCostPrice").value) || 0;
   const retailPrice = parseFloat(document.getElementById("supplyRetailPrice").value) || 0;
-  const batchNo = document.getElementById("supplyBatchNo").value.trim() || "BAT-001";
+  const batchNo = document.getElementById("supplyBatchNo").value.trim() || ("BAT-" + Math.floor(1000 + Math.random() * 9000));
   const expiryDate = document.getElementById("supplyExpiryDate").value || "2028-12-31";
-  const shelf = document.getElementById("supplyShelfInput").value.trim() || "رف A-1";
-  const category = document.getElementById("supplyCategorySelect").value;
 
   if (boxes <= 0) {
-    showToast("تنبيه", "يرجى تحديد عدد العلب المستلمة!", "warning");
+    showToast("تنبيه", "يرجى تحديد الكمية المستلمة بشكل صحيح!", "warning");
     return;
   }
 
@@ -4816,8 +5155,12 @@ async function addItemToSupplyInvoice() {
   currentSupplyItems.push({
     isNew: supplyMode === 'new',
     code: medCode,
+    barcode: barcode,
     name: medName,
     category: category,
+    subCategory: subCategory,
+    isBoxOnly: isBoxOnly,
+    isPieceOnly: isPieceOnly,
     shelf: shelf,
     boxes: boxes,
     stripsPerBox: stripsPerBox,
@@ -4832,8 +5175,9 @@ async function addItemToSupplyInvoice() {
 
   renderSupplyInvoiceTable();
   
-  // تجهيز الحقول للصنف التالي وتصفير خانة البحث
+  // تجهيز الحقول لإدخال الصنف التالي وتصفير الباركود والاسم
   document.getElementById("supplyBatchNo").value = "BAT-" + Math.floor(1000 + Math.random() * 9000);
+  document.getElementById("supplyBarcodeInput").value = "";
   if (supplyMode === 'new') {
     document.getElementById("supplyNewNameInput").value = "";
   } else {
@@ -4842,6 +5186,7 @@ async function addItemToSupplyInvoice() {
   }
 }
 
+// 7. رسم جدول الأصناف المدخلة مع عرض الباركود والوحدات بدقة
 function renderSupplyInvoiceTable() {
   const tbody = document.getElementById("supplyInvoiceTableBody");
   const noState = document.getElementById("noSupplyItemsState");
@@ -4855,15 +5200,30 @@ function renderSupplyInvoiceTable() {
     if (noState) noState.classList.add("hidden");
     currentSupplyItems.forEach((item, idx) => {
       totalInvoice += item.totalCost;
+
+      let unitDetailsText = "";
+      if (item.isPieceOnly) {
+        unitDetailsText = `${item.boxes} قطعة`;
+      } else if (item.isBoxOnly) {
+        unitDetailsText = `${item.boxes} علبة (بدون شريط/قرص)`;
+      } else {
+        unitDetailsText = `${item.boxes} علبة (${item.stripsPerBox} شريط - ${item.tabletsPerStrip} في الشريط)`;
+      }
+
       const tr = document.createElement("tr");
       tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/40";
-      // حماية المدخلات عبر escapeHTML لمنع هجمات XSS
       tr.innerHTML = `
         <td class="p-2 font-bold">${idx + 1}</td>
-        <td class="p-2 font-bold font-sans">${escapeHTML(item.name)}</td>
-        <td class="p-2 text-slate-500 font-sans">${escapeHTML(item.category)}</td>
+        <td class="p-2 font-bold font-sans">
+          <div>${escapeHTML(item.name)}</div>
+          ${item.barcode ? `<span class="text-[10px] text-teal-600 font-mono font-bold block"><i class="fa-solid fa-barcode text-[9px]"></i> ${escapeHTML(item.barcode)}</span>` : ''}
+        </td>
+        <td class="p-2 text-slate-500 font-sans">
+          ${escapeHTML(item.category)}
+          ${item.subCategory ? `<span class="block text-[10px] font-bold text-teal-700">(${escapeHTML(item.subCategory)})</span>` : ''}
+        </td>
         <td class="p-2 text-center font-bold text-teal-600">
-          ${item.boxes} علبة (${item.stripsPerBox} شريط/علبة - ${item.tabletsPerStrip} قرص/شريط)
+          ${escapeHTML(unitDetailsText)}
         </td>
         <td class="p-2 font-mono">${escapeHTML(item.batchNo)} (${escapeHTML(item.expiryDate)})</td>
         <td class="p-2 text-left font-mono">${item.costPrice.toFixed(2)}</td>
@@ -4879,7 +5239,8 @@ function renderSupplyInvoiceTable() {
   const totalVal = document.getElementById("supplyInvoiceTotalVal");
   if (totalVal) totalVal.innerText = totalInvoice.toFixed(2);
 }
-// اعتماد الشحنة رسمياً وتغذية رصيد المخزن في قاعدة البيانات
+
+// 8. اعتماد الشحنة وحفظها محلياً وسحابياً مع الباركود والتصنيفات
 async function commitSupplyInvoice() {
   if (currentSupplyItems.length === 0) {
     showToast("تنبيه", "أضف صنفاً واحداً على الأقل للشحنة قبل الاعتماد!", "warning");
@@ -4887,13 +5248,16 @@ async function commitSupplyInvoice() {
   }
 
   for (const item of currentSupplyItems) {
+    const finalBarcode = item.barcode || Math.floor(100000000000 + Math.random() * 900000000000).toString();
+
     if (item.isNew) {
       await db.medicines.add({
         code: item.code,
-        barcode: Math.floor(100000000000 + Math.random() * 900000000000).toString(),
+        barcode: finalBarcode,
         name: item.name,
         scientificName: item.name,
         category: item.category,
+        subCategory: item.subCategory,
         shelfLocation: item.shelf,
         stripsPerBox: item.stripsPerBox,
         tabletsPerStrip: item.tabletsPerStrip,
@@ -4907,46 +5271,51 @@ async function commitSupplyInvoice() {
         isControlled: false
       });
     } else {
-      await db.medicines.update(item.code, {
+      const updateData = {
         stripsPerBox: item.stripsPerBox,
         tabletsPerStrip: item.tabletsPerStrip,
         boxPrice: item.retailPrice,
         boxCost: item.costPrice,
-        shelfLocation: item.shelf
-      });
+        shelfLocation: item.shelf,
+        category: item.category,
+        subCategory: item.subCategory
+      };
+      if (item.barcode) updateData.barcode = item.barcode;
+      await db.medicines.update(item.code, updateData);
     }
 
-    // إضافة التشغيلة بالرصيد الإجمالي المحسوب بالقرص محلياً
-await db.batches.add({
-  medCode: item.code,
-  batchNo: item.batchNo,
-  expiryDate: item.expiryDate,
-  totalTablets: item.totalTablets,
-  costPerBox: item.costPrice,
-  retailPrice: item.retailPrice // حفظ سعر البيع الخاص بهذه الشحنة
-});
-
-    // مزامنة الصنف وتشغيلته سحابياً سواء كان جديداً أو مسجلاً مسبقاً
-    const savedMed = await db.medicines.get(item.code);
-    if (savedMed) syncMedicineToCloud(savedMed);
- syncBatchToCloud({
+    // إضافة بيانات التشغيلة
+    await db.batches.add({
       medCode: item.code,
       batchNo: item.batchNo,
       expiryDate: item.expiryDate,
       totalTablets: item.totalTablets,
       costPerBox: item.costPrice,
-      retailPrice: item.retailPrice // حفظ سعر بيع الشحنة سحابياً
+      retailPrice: item.retailPrice
     });
+
+    // المزامنة الفورية مع السحابة (PostgreSQL)
+    const savedMed = await db.medicines.get(item.code);
+    if (savedMed && typeof syncMedicineToCloud === "function") syncMedicineToCloud(savedMed);
+    if (typeof syncBatchToCloud === "function") {
+      syncBatchToCloud({
+        medCode: item.code,
+        batchNo: item.batchNo,
+        expiryDate: item.expiryDate,
+        totalTablets: item.totalTablets,
+        costPerBox: item.costPrice,
+        retailPrice: item.retailPrice
+      });
+    }
   }
 
-  logAudit("استلام شحنة موردين", `تم اعتماد فاتورة توريد تحتوي على ${currentSupplyItems.length} صنف`);
-  showToast("تم توريد الشحنة", "تم إدخال كافة الأصناف والتشغيلات إلى رصيد المخزن والمزامنة السحابية بنجاح!", "success");
+  logAudit("استلام شحنة موردين", `تم اعتماد توريد ${currentSupplyItems.length} صنف وتحديث أرصدة المخزن والباركود`);
+  showToast("تم توريد الشحنة", "تم توريد الشحنة وتحديث الباركود والوحدات بنجاح!", "success");
 
   toggleModal("bulkSupplyModal", false);
   if (typeof loadAllMedicinesStock === "function") loadAllMedicinesStock();
   if (typeof loadReorderData === "function") loadReorderData();
-}
-// ==================== 1. إدارة تغيير كلمة المرور ====================
+}// ==================== 1. إدارة تغيير كلمة المرور ====================
 function openChangePasswordModal() {
   document.getElementById("pwdCurrentInput").value = "";
   document.getElementById("pwdNewInput").value = "";
